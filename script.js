@@ -78,15 +78,19 @@ function displayUserInfo(uid) {
     if (snapshot.exists()) {
       const data = snapshot.val();
       const name = data.name;
-      const dob = new Date(data.dob);
+
+      // Parse the DOB string
+      const [year, month, day] = data.dob.split("-").map(Number);
+      
+      // Get today's date
       const today = new Date();
+      const todayMonth = today.getMonth() + 1; // Add 1 because getMonth() returns 0-11
+      const todayDate = today.getDate();
 
-      const todayMonth = today.getUTCMonth();
-      const todayDate = today.getUTCDate();
-      const dobMonth = dob.getUTCMonth();
-      const dobDate = dob.getUTCDate();
+      console.log("Today's Month and Date:", todayMonth, todayDate);
+      console.log("DOB Month and Date:", month, day);
 
-      if (todayMonth === dobMonth && todayDate === dobDate) {
+      if (todayMonth === month && todayDate === day) {
         fetch('https://type.fit/api/quotes')
           .then(response => response.json())
           .then(quotes => {
@@ -96,11 +100,14 @@ function displayUserInfo(uid) {
           })
           .catch(error => console.error('Error fetching quotes:', error));
       } else {
-        const nextBirthday = new Date(today.getUTCFullYear(), dobMonth, dobDate);
+        const nextBirthday = new Date(today.getFullYear(), month - 1, day);
         if (nextBirthday < today) {
-          nextBirthday.setUTCFullYear(today.getUTCFullYear() + 1);
+          nextBirthday.setFullYear(today.getFullYear() + 1);
         }
         const daysUntilBirthday = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+
+        console.log("Days until birthday:", daysUntilBirthday);
+
         document.getElementById('welcomeMessage').innerText = `Welcome back, ${name.toUpperCase()}!`;
         document.getElementById('birthdayMessage').innerText = `There are ${daysUntilBirthday} days left until your birthday.`;
       }
@@ -109,6 +116,9 @@ function displayUserInfo(uid) {
     }
   }).catch(error => console.error('Error fetching user data:', error));
 }
+
+
+
 
 // Log out
 document.getElementById('logoutButton').addEventListener('click', function () {
